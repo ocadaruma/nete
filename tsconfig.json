@@ -16,7 +16,13 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "sourceMap": true,
-    "target": "es6"
+    "target": "es6",
+    "experimentalDecorators": true,
   },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "tests/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

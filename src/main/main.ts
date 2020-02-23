@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, globalShortcut, BrowserWindow } from 'electron';
 import * as path from "path";
 
 function createWindow() {
@@ -9,7 +9,7 @@ function createWindow() {
       nodeIntegration: true,
       devTools: process.env.NODE_ENV == 'development',
     },
-    alwaysOnTop: true,
+    // alwaysOnTop: true,
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
@@ -21,6 +21,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+});
+
+app.on('ready', () => {
+  // const
 });
 
 app.on('activate', () => {

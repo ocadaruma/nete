@@ -1,0 +1,4 @@
+# transpiled js and sourcemaps
+
+*.js
+*.js.map

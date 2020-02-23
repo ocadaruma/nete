@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 const baseConfig = {
   node: { __dirname: false, __filename: false },
@@ -11,15 +12,23 @@ const baseConfig = {
       '@public': path.join(__dirname, 'public'),
       '@renderer': path.join(__dirname, 'src/renderer'),
       '@utils': path.join(__dirname, 'src/utils'),
+      // 'vue$': 'vue/dist/vue.esm.js',
     },
-    extensions: ['.js', '.json', '.ts', '.tsx'],
+    extensions: ['.js', '.json', '.ts', '.tsx', '.vue'],
   },
   module: {
     rules: [
       {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+      },
+      {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         loader: 'ts-loader',
+        options: {
+          appendTsSuffixTo: [/\.vue$/],
+        },
       },
       {
         test: /\.(scss|css)$/,
@@ -60,6 +69,7 @@ const rendererConfig = Object.assign({
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, './public/index.html'),
     }),
+    new VueLoaderPlugin(),
   ],
 }, baseConfig);
 
