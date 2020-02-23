@@ -1,0 +1,14 @@
+{
+  "name": "nete",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "electron": "^8.0.0"
+  }
+}
