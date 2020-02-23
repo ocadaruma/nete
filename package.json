@@ -1,14 +1,21 @@
 {
   "name": "nete",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "Pete electron",
+  "main": "./dist/main.bundle.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dev": "webpack --mode=development --watch --progress --colors",
+    "prod": "webpack --mode=production --progress --colors"
   },
-  "author": "",
+  "author": "ocadaruma",
   "license": "Apache-2.0",
   "devDependencies": {
-    "electron": "^8.0.0"
+    "electron": "^8.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.8.2",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
   }
 }
