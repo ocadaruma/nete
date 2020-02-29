@@ -10,7 +10,7 @@ import 'buefy/dist/buefy.css';
 import '@/renderer/css/app.scss';
 
 Vue.use(Buefy);
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
   {

@@ -47,8 +47,6 @@ export default class ClipboardPanel extends Vue {
     doc.head.append(styleElement);
     doc.body.contentEditable = 'true';
 
-    console.log(doc.documentElement.outerHTML);
-
     return {
       format: format,
       text: doc.documentElement.outerHTML,

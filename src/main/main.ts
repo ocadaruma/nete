@@ -2,6 +2,7 @@ import {
   app,
   globalShortcut,
   Accelerator,
+  Input,
   Menu,
   BrowserWindow,
   Tray } from 'electron';
@@ -22,6 +23,17 @@ function showClipboardPanel() {
     alwaysOnTop: true,
   });
 
+  clipboardWindow.webContents.setIgnoreMenuShortcuts(true);
+  const shortcutHandler = (event: Event, input: Input) => {
+    if (input.type == 'keyDown' &&
+        input.key == 'w' &&
+        (input.control || input.meta)) {
+      if (clipboardWindow.isFocused()) {
+        clipboardWindow.close();
+      }
+    }
+  };
+  clipboardWindow.webContents.on('before-input-event', shortcutHandler);
   clipboardPanels.add(clipboardWindow);
   clipboardWindow.on('close', () => {
     clipboardPanels.delete(clipboardWindow);
