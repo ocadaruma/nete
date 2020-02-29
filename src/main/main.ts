@@ -10,6 +10,11 @@ import {
 import * as path from "path";
 import Config from "@main/Config";
 
+// prevent duplicated process
+if (!app.requestSingleInstanceLock()) {
+  app.exit();
+}
+
 const clipboardPanels: Set<BrowserWindow> = new Set();
 function showClipboardPanel() {
   const clipboardWindow = new BrowserWindow({
@@ -35,14 +40,19 @@ function showClipboardPanel() {
   };
   clipboardWindow.webContents.on('before-input-event', shortcutHandler);
   clipboardPanels.add(clipboardWindow);
-  clipboardWindow.on('close', () => {
+  clipboardWindow.once('close', () => {
     clipboardPanels.delete(clipboardWindow);
   });
   clipboardWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
 }
 
+const openPanels: Map<string, BrowserWindow> = new Map();
 function showWindow(path: string): () => void {
   return () => {
+    if (openPanels.has(path)) {
+      openPanels.get(path)!.focus();
+      return;
+    }
     const window = new BrowserWindow({
       width: 400,
       height: 600,
@@ -51,8 +61,11 @@ function showWindow(path: string): () => void {
         devTools: process.env.NODE_ENV == 'development',
       },
     });
+    openPanels.set(path, window);
+    window.once('close', () => {
+      openPanels.delete(path);
+    });
     window.setMenuBarVisibility(false);
-
     window.loadURL(`file://${__dirname}/index.html#/${path}`);
   }
 }
@@ -64,7 +77,6 @@ function registerShortcut(accelerator: Accelerator, callback: () => void) {
 }
 
 let tray: Tray;
-
 app.whenReady().then(() => {
   tray = new Tray(path.join(__dirname, 'images', 'tray_icon.png'));
 
@@ -80,17 +92,18 @@ app.whenReady().then(() => {
 
   let allHidden = false;
   registerShortcut(config.toggleHideAll, () => {
-    clipboardPanels.forEach(w => {
+    clipboardPanels.forEach(window => {
       if (allHidden) {
-        w.show();
+        window.show();
       } else {
-        w.hide();
+        window.hide();
       }
     });
     allHidden = !allHidden;
   });
 });
 
+// this app should be daemonized at task tray
 app.on('window-all-closed', () => {
   // do nothing
 });
