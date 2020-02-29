@@ -1,4 +1,36 @@
-import App from '@/renderer/App.vue';
-import Vue from 'vue';
+import About from '@renderer/About.vue';
+import ClipboardPanel from '@renderer/./ClipboardPanel.vue';
+import Preference from '@renderer/Preference.vue';
 
-new Vue(App).$mount('#app');
+import Buefy from 'buefy';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+
+import 'buefy/dist/buefy.css';
+import '@/renderer/css/app.scss';
+
+Vue.use(Buefy);
+Vue.use(VueRouter)
+
+const routes = [
+  {
+    path: '/about',
+    component: About
+  },
+  {
+    path: '/clipboard',
+    component: ClipboardPanel,
+  },
+  {
+    path: '/preference',
+    component: Preference,
+  },
+];
+
+const router = new VueRouter({
+  routes,
+});
+
+new Vue({
+  router
+}).$mount('#app');

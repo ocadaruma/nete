@@ -1,30 +1,47 @@
-import { app, globalShortcut, BrowserWindow } from 'electron';
+import {
+  app,
+  globalShortcut,
+  Menu,
+  BrowserWindow,
+  Tray } from 'electron';
+
 import * as path from "path";
+import Config from "@main/Config";
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 600,
+    height: 400,
     webPreferences: {
       nodeIntegration: true,
       devTools: process.env.NODE_ENV == 'development',
     },
+    frame: false,
     // alwaysOnTop: true,
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  // mainWindow.webContents.openDevTools();
+  mainWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
 }
 
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
 });
 
+let tray: Tray;
 app.on('ready', () => {
-  // const
+  tray = new Tray(path.join(__dirname, 'images', 'tray_icon.png'));
+
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'About Pete', type: 'normal' },
+    { type: 'separator' },
+    { label: 'Show Main Window', type: 'normal' },
+    { label: 'Quit Pete', type: 'normal', click: () => {}, },
+  ]));
 });
 
 app.on('activate', () => {

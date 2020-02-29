@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
@@ -12,7 +13,7 @@ const baseConfig = {
       '@public': path.join(__dirname, 'public'),
       '@renderer': path.join(__dirname, 'src/renderer'),
       '@utils': path.join(__dirname, 'src/utils'),
-      // 'vue$': 'vue/dist/vue.esm.js',
+      'vue$': 'vue/dist/vue.esm.js',
     },
     extensions: ['.js', '.json', '.ts', '.tsx', '.vue'],
   },
@@ -56,6 +57,11 @@ const mainConfig = Object.assign({
     path: path.join(__dirname, 'dist'),
     filename: 'main.bundle.js',
   },
+  plugins: [
+    new CopyWebpackPlugin([
+      { from: './public/images', to: 'images', },
+    ]),
+  ],
 }, baseConfig);
 
 const rendererConfig = Object.assign({

@@ -1,0 +1,8 @@
+html,body {
+  overflow-y: hidden;
+}
+
+html,body,#app,.fill-parent {
+  width: 100%;
+  height: 100%;
+}
