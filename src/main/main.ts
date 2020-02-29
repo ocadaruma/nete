@@ -1,6 +1,7 @@
 import {
   app,
   globalShortcut,
+  Accelerator,
   Menu,
   BrowserWindow,
   Tray } from 'electron';
@@ -8,8 +9,9 @@ import {
 import * as path from "path";
 import Config from "@main/Config";
 
-function createWindow() {
-  const mainWindow = new BrowserWindow({
+const clipboardPanels: Set<BrowserWindow> = new Set();
+function showClipboardPanel() {
+  const clipboardWindow = new BrowserWindow({
     width: 600,
     height: 400,
     webPreferences: {
@@ -17,35 +19,70 @@ function createWindow() {
       devTools: process.env.NODE_ENV == 'development',
     },
     frame: false,
-    // alwaysOnTop: true,
+    alwaysOnTop: true,
   });
 
-  // mainWindow.webContents.openDevTools();
-  mainWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
+  clipboardPanels.add(clipboardWindow);
+  clipboardWindow.on('close', () => {
+    clipboardPanels.delete(clipboardWindow);
+  });
+  clipboardWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
 }
 
-app.whenReady().then(createWindow);
+function showWindow(path: string): () => void {
+  return () => {
+    const window = new BrowserWindow({
+      width: 400,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        devTools: process.env.NODE_ENV == 'development',
+      },
+    });
+    window.setMenuBarVisibility(false);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
+    window.loadURL(`file://${__dirname}/index.html#/${path}`);
   }
-});
+}
+
+function registerShortcut(accelerator: Accelerator, callback: () => void) {
+  if (!globalShortcut.register(accelerator, callback)) {
+    console.log(`registration failed: ${accelerator}`);
+  }
+}
 
 let tray: Tray;
-app.on('ready', () => {
+
+app.whenReady().then(() => {
   tray = new Tray(path.join(__dirname, 'images', 'tray_icon.png'));
 
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'About Pete', type: 'normal' },
+    { label: 'About Pete', type: 'normal', click: showWindow('about'), },
     { type: 'separator' },
-    { label: 'Show Main Window', type: 'normal' },
-    { label: 'Quit Pete', type: 'normal', click: () => {}, },
+    { label: 'Preference', type: 'normal', click: showWindow('preference') },
+    { label: 'Quit Pete', type: 'normal', click: app.quit },
   ]));
+
+  const config = Config.load();
+  registerShortcut(config.hotkey, showClipboardPanel);
+
+  let allHidden = false;
+  registerShortcut(config.toggleHideAll, () => {
+    clipboardPanels.forEach(w => {
+      if (allHidden) {
+        w.show();
+      } else {
+        w.hide();
+      }
+    });
+    allHidden = !allHidden;
+  });
 });
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-  }
+app.on('window-all-closed', () => {
+  // do nothing
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
