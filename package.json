@@ -1,12 +1,14 @@
 {
   "name": "nete",
+  "productName": "Nete",
   "version": "0.1.1",
   "description": "Pete electron",
   "main": "./dist/main.bundle.js",
   "scripts": {
     "start": "electron .",
     "dev": "webpack --mode=development --watch --progress --colors",
-    "prod": "webpack --mode=production --progress --colors"
+    "prod": "webpack --mode=production --progress --colors",
+    "package": "npm run prod && electron-packager --overwrite --out build ."
   },
   "author": "ocadaruma",
   "license": "Apache-2.0",
@@ -15,6 +17,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.2",
     "electron": "^8.0.0",
+    "electron-packager": "^14.2.1",
     "html-webpack-plugin": "^3.2.0",
     "style-loader": "^1.1.3",
     "ts-loader": "^6.2.1",
