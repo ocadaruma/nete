@@ -8,7 +8,7 @@
     "start": "electron .",
     "dev": "webpack --mode=development --watch --progress --colors",
     "prod": "webpack --mode=production --progress --colors",
-    "package": "npm run prod && electron-packager --overwrite --out build ."
+    "package:darwin": "npm run prod && electron-packager --platform darwin --icon ./assets/Nete.icns --overwrite --out build ."
   },
   "author": "ocadaruma",
   "license": "Apache-2.0",
