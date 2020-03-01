@@ -27,6 +27,7 @@ function showClipboardPanel() {
     },
     frame: false,
     alwaysOnTop: true,
+    icon: path.join(__dirname, 'images', 'icon.png'),
   });
 
   const shortcutHandler = (event: Event, input: Input) => {
@@ -49,10 +50,10 @@ function showClipboardPanel() {
 }
 
 const openPanels: Map<string, BrowserWindow> = new Map();
-function showWindow(path: string): () => void {
+function showWindow(panelPath: string): () => void {
   return () => {
-    if (openPanels.has(path)) {
-      openPanels.get(path)!.focus();
+    if (openPanels.has(panelPath)) {
+      openPanels.get(panelPath)!.focus();
       return;
     }
     const window = new BrowserWindow({
@@ -62,14 +63,15 @@ function showWindow(path: string): () => void {
         nodeIntegration: true,
         devTools: process.env.NODE_ENV == 'development',
       },
+      icon: path.join(__dirname, 'images', 'icon.png'),
     });
-    openPanels.set(path, window);
+    openPanels.set(panelPath, window);
 
     window.setMenuBarVisibility(false);
     window.once('close', () => {
-      openPanels.delete(path);
+      openPanels.delete(panelPath);
     });
-    window.loadURL(`file://${__dirname}/index.html#/${path}`);
+    window.loadURL(`file://${__dirname}/index.html#/${panelPath}`);
   }
 }
 
