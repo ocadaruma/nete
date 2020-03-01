@@ -1,6 +1,7 @@
 import {
   app,
   globalShortcut,
+  systemPreferences,
   Accelerator,
   Input,
   Menu,
@@ -81,10 +82,26 @@ function registerShortcut(accelerator: Accelerator, callback: () => void) {
 let tray: Tray;
 app.whenReady().then(() => {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
-    { label: app.name, submenu: [ { role: 'quit' } ]}
+    { label: app.name, submenu: [ { role: 'quit' } ]},
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' },
+      ],
+    }
   ]));
 
-  tray = new Tray(path.join(__dirname, 'images', 'tray_icon.png'));
+  if (process.platform == 'darwin') {
+    tray = new Tray(path.join(__dirname, 'images', 'tray_iconTemplate.png'));
+  } else {
+    tray = new Tray(path.join(__dirname, 'images', 'tray_icon.png'));
+  }
 
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'About Pete', click: showWindow('about'), },
@@ -108,6 +125,11 @@ app.whenReady().then(() => {
     allHidden = !allHidden;
   });
 });
+
+if (process.platform == 'darwin') {
+  (<any>systemPreferences).setUserDefault('NSDisabledDictationMenuItem', 'boolean', true);
+  (<any>systemPreferences).setUserDefault('NSDisabledCharacterPaletteMenuItem', 'boolean', true);
+}
 
 // this app should be daemonized at task tray
 app.on('window-all-closed', () => {
