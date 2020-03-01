@@ -1,8 +1,7 @@
 <template>
   <div class="floating-panel-resize-frame fill-parent">
     <div class="floating-panel-frame fill-parent">
-      <iframe frameborder="0"
-              class="floating-panel-text fill-parent"
+      <iframe class="floating-panel-text fill-parent"
               :srcdoc="text"></iframe>
     </div>
   </div>

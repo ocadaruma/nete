@@ -12,7 +12,7 @@ import Config from "@main/Config";
 
 // prevent duplicated process
 if (!app.requestSingleInstanceLock()) {
-  app.exit();
+  app.exit(1);
 }
 
 const clipboardPanels: Set<BrowserWindow> = new Set();
@@ -28,13 +28,14 @@ function showClipboardPanel() {
     alwaysOnTop: true,
   });
 
-  clipboardWindow.webContents.setIgnoreMenuShortcuts(true);
   const shortcutHandler = (event: Event, input: Input) => {
-    if (input.type == 'keyDown' &&
-        input.key == 'w' &&
-        (input.control || input.meta)) {
-      if (clipboardWindow.isFocused()) {
-        clipboardWindow.close();
+    if (input.type == 'keyDown') {
+      if (input.key == 'w' && (input.control || input.meta)) {
+        if (clipboardWindow.isFocused()) {
+          clipboardWindow.close();
+        }
+      } else if (input.key == 'r' && (input.control || input.meta)) {
+        event.preventDefault();
       }
     }
   };
@@ -62,10 +63,11 @@ function showWindow(path: string): () => void {
       },
     });
     openPanels.set(path, window);
+
+    window.setMenuBarVisibility(false);
     window.once('close', () => {
       openPanels.delete(path);
     });
-    window.setMenuBarVisibility(false);
     window.loadURL(`file://${__dirname}/index.html#/${path}`);
   }
 }
@@ -78,13 +80,17 @@ function registerShortcut(accelerator: Accelerator, callback: () => void) {
 
 let tray: Tray;
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    { label: app.name, submenu: [ { role: 'quit' } ]}
+  ]));
+
   tray = new Tray(path.join(__dirname, 'images', 'tray_icon.png'));
 
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'About Pete', type: 'normal', click: showWindow('about'), },
+    { label: 'About Pete', click: showWindow('about'), },
     { type: 'separator' },
-    { label: 'Preference', type: 'normal', click: showWindow('preference') },
-    { label: 'Quit Pete', type: 'normal', click: app.quit },
+    { label: 'Preference', click: showWindow('preference') },
+    { role: 'quit' },
   ]));
 
   const config = Config.load();
