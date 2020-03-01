@@ -7,6 +7,7 @@
   "build": {
     "appId": "com.mayreh.Nete",
     "mac": {
+      "target": ["dmg"],
       "extendInfo": {
         "LSUIElement": 1
       }
@@ -28,13 +29,13 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.12.1",
     "buefy": "^0.8.12",
-    "electron": "^8.0.0",
     "vue": "^2.6.11",
     "vue-router": "^3.1.5"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.2",
+    "electron": "^8.0.0",
     "electron-builder": "^22.3.2",
     "html-webpack-plugin": "^3.2.0",
     "style-loader": "^1.1.3",
