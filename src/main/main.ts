@@ -104,7 +104,7 @@ app.whenReady().then(() => {
   }
 
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'About Pete', click: showWindow('about'), },
+    { label: `About ${app.name}`, click: showWindow('about'), },
     { type: 'separator' },
     { label: 'Preference', click: showWindow('preference') },
     { role: 'quit' },
