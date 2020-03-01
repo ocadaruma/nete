@@ -6,6 +6,8 @@ import Buefy from 'buefy';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 
+import '@fortawesome/fontawesome-free/js/fontawesome';
+import '@fortawesome/fontawesome-free/js/regular';
 import 'buefy/dist/buefy.css';
 import '@/renderer/css/app.scss';
 

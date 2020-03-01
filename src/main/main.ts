@@ -57,13 +57,15 @@ function showWindow(panelPath: string): () => void {
       return;
     }
     const window = new BrowserWindow({
-      width: 400,
-      height: 600,
+      width: 300,
+      height: 400,
       webPreferences: {
         nodeIntegration: true,
         devTools: process.env.NODE_ENV == 'development',
       },
       icon: path.join(__dirname, 'images', 'icon.png'),
+      resizable: false,
+      maximizable: false,
     });
     openPanels.set(panelPath, window);
 
