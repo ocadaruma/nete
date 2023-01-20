@@ -29,11 +29,11 @@
 </template>
 
 <script lang="ts">
-import { remote, shell } from 'electron';
+import { shell } from 'electron';
 import Component from "vue-class-component";
 import Vue from "vue";
 
-const { app } = remote;
+const { app } = Electron;
 
 @Component
 export default class About extends Vue {

@@ -2,7 +2,6 @@ import {
   app,
   globalShortcut,
   systemPreferences,
-  Accelerator,
   Input,
   Menu,
   BrowserWindow,
@@ -10,6 +9,8 @@ import {
 
 import * as path from "path";
 import Config from "@main/Config";
+import Accelerator = Electron.Accelerator;
+import * as process from "process";
 
 // prevent duplicated process
 if (!app.requestSingleInstanceLock()) {
@@ -24,8 +25,9 @@ function showClipboardPanel() {
     webPreferences: {
       nodeIntegration: true,
       devTools: process.env.NODE_ENV == 'development',
+      contextIsolation: false,
     },
-    frame: false,
+    frame: true,
     alwaysOnTop: true,
     icon: path.join(__dirname, 'images', 'icon.png'),
   });
@@ -47,6 +49,7 @@ function showClipboardPanel() {
     clipboardPanels.delete(clipboardWindow);
   });
   clipboardWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
+  clipboardWindow.webContents.openDevTools()
 }
 
 const openPanels: Map<string, BrowserWindow> = new Map();

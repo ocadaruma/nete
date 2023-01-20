@@ -31,6 +31,7 @@ export default class ClipboardPanel extends Vue {
         </head>
         <body>
           <pre>${clipboard.readText()}</pre>
+          AOIOHERLSKJ
         </body>
         </html>
         `;
