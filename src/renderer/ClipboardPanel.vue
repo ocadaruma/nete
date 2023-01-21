@@ -10,28 +10,31 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { clipboard } from 'electron';
+const { clipboard } = window;
 
 @Component
 export default class ClipboardPanel extends Vue {
-  data() {
-    const format = clipboard.availableFormats().some(format => format == 'text/html') ?
+  text = ""
+
+  async created() {
+    const formats = await clipboard.availableFormats();
+    const format = formats.some(format => format == 'text/html') ?
         'text/html' : 'text/plain';
 
     let text: string;
     switch (format) {
       case 'text/html':
-        text = clipboard.readHTML();
+        text = await clipboard.readHTML();
         break;
       case 'text/plain':
+        const clipboardText = await clipboard.readText();
         text =`
         <html>
         <head>
           <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         </head>
         <body>
-          <pre>${clipboard.readText()}</pre>
-          AOIOHERLSKJ
+          <pre>${clipboardText}</pre>
         </body>
         </html>
         `;
@@ -47,10 +50,7 @@ export default class ClipboardPanel extends Vue {
     doc.head.append(styleElement);
     doc.body.contentEditable = 'true';
 
-    return {
-      format: format,
-      text: doc.documentElement.outerHTML,
-    }
+    this.text = doc.documentElement.outerHTML;
   }
 }
 </script>

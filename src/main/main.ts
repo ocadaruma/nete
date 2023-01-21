@@ -5,12 +5,14 @@ import {
   Input,
   Menu,
   BrowserWindow,
-  Tray } from 'electron';
+  Tray, ipcMain, clipboard, shell
+} from 'electron';
 
 import * as path from "path";
 import Config from "@main/Config";
 import Accelerator = Electron.Accelerator;
 import * as process from "process";
+import { Clipboard, Shell, AppInfo } from "@main/ipc";
 
 // prevent duplicated process
 if (!app.requestSingleInstanceLock()) {
@@ -23,11 +25,10 @@ function showClipboardPanel() {
     width: 600,
     height: 400,
     webPreferences: {
-      nodeIntegration: true,
       devTools: process.env.NODE_ENV == 'development',
-      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.js'),
     },
-    frame: true,
+    frame: false,
     alwaysOnTop: true,
     icon: path.join(__dirname, 'images', 'icon.png'),
   });
@@ -49,7 +50,6 @@ function showClipboardPanel() {
     clipboardPanels.delete(clipboardWindow);
   });
   clipboardWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
-  clipboardWindow.webContents.openDevTools()
 }
 
 const openPanels: Map<string, BrowserWindow> = new Map();
@@ -63,8 +63,8 @@ function showWindow(panelPath: string): () => void {
       width: 300,
       height: 400,
       webPreferences: {
-        nodeIntegration: true,
         devTools: process.env.NODE_ENV == 'development',
+        preload: path.join(__dirname, 'preload.js'),
       },
       icon: path.join(__dirname, 'images', 'icon.png'),
       resizable: false,
@@ -77,6 +77,7 @@ function showWindow(panelPath: string): () => void {
       openPanels.delete(panelPath);
     });
     window.loadURL(`file://${__dirname}/index.html#/${panelPath}`);
+    window.webContents.openDevTools()
   }
 }
 
@@ -84,6 +85,21 @@ function registerShortcut(accelerator: Accelerator, callback: () => void) {
   if (!globalShortcut.register(accelerator, callback)) {
     console.log(`registration failed: ${accelerator}`);
   }
+}
+
+function setupIpc() {
+  ipcMain.handle(Clipboard.Channel.AvailableFormats,
+      () => clipboard.availableFormats());
+  ipcMain.handle(Clipboard.Channel.ReadHTML,
+      () => clipboard.readHTML());
+  ipcMain.handle(Clipboard.Channel.ReadText,
+      () => clipboard.readText());
+  ipcMain.handle(Shell.Channel.OpenExternal,
+      (event, url) => shell.openExternal(url));
+  ipcMain.handle(AppInfo.Channel.Name,
+      () => app.getName());
+  ipcMain.handle(AppInfo.Channel.Version,
+      () => app.getVersion());
 }
 
 let tray: Tray;
@@ -131,6 +147,8 @@ app.whenReady().then(() => {
     });
     allHidden = !allHidden;
   });
+
+  setupIpc();
 });
 
 if (process.platform == 'darwin') {

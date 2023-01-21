@@ -29,16 +29,20 @@
 </template>
 
 <script lang="ts">
-import { shell } from 'electron';
 import Component from "vue-class-component";
 import Vue from "vue";
 
-const { app } = Electron;
+const { appInfo, shell } = window;
 
 @Component
 export default class About extends Vue {
-  appName = app.name;
-  appVersion = app.getVersion();
+  appName = "";
+  appVersion = "";
+
+  async created() {
+    this.appName = await appInfo.name();
+    this.appVersion = await appInfo.version();
+  }
 
   openWithBrowser(url: string) {
     shell.openExternal(url);

@@ -66,7 +66,7 @@ const mainConfig = Object.assign({
 
 const rendererConfig = Object.assign({
   entry: './src/renderer/renderer.ts',
-  target: 'electron-renderer',
+  target: 'web',
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'renderer.bundle.js',
@@ -79,4 +79,13 @@ const rendererConfig = Object.assign({
   ],
 }, baseConfig);
 
-module.exports = [mainConfig, rendererConfig];
+const preloadConfig = Object.assign({
+  entry: './src/preload/preload.ts',
+  target: 'electron-preload',
+  output: {
+    path: path.join(__dirname, 'dist'),
+    filename: 'preload.js',
+  },
+}, baseConfig);
+
+module.exports = [mainConfig, rendererConfig, preloadConfig];
