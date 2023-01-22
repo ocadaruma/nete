@@ -12,14 +12,21 @@ import * as path from "path";
 import Config from "@main/Config";
 import Accelerator = Electron.Accelerator;
 import * as process from "process";
-import { Clipboard, Shell, AppInfo } from "@main/ipc";
+import {Clipboard, Shell, AppInfo, AppWindow} from "@main/ipc";
+import NativeImage = Electron.NativeImage;
+
+interface ClipboardWindow {
+  browserWindow: BrowserWindow
+  image: NativeImage | null
+}
 
 // prevent duplicated process
 if (!app.requestSingleInstanceLock()) {
   app.exit(1);
 }
 
-const clipboardPanels: Set<BrowserWindow> = new Set();
+// lookup table from WebContents id to the window
+const clipboardWindows: Map<number, ClipboardWindow> = new Map();
 function showClipboardPanel() {
   const clipboardWindow = new BrowserWindow({
     width: 600,
@@ -45,11 +52,15 @@ function showClipboardPanel() {
     }
   };
   clipboardWindow.webContents.on('before-input-event', shortcutHandler);
-  clipboardPanels.add(clipboardWindow);
+  clipboardWindows.set(clipboardWindow.webContents.id, {
+    browserWindow: clipboardWindow,
+    image: null,
+  });
   clipboardWindow.once('close', () => {
-    clipboardPanels.delete(clipboardWindow);
+    clipboardWindows.delete(clipboardWindow.webContents.id);
   });
   clipboardWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
+  clipboardWindow.webContents.openDevTools()
 }
 
 const openPanels: Map<string, BrowserWindow> = new Map();
@@ -94,12 +105,34 @@ function setupIpc() {
       () => clipboard.readHTML());
   ipcMain.handle(Clipboard.Channel.ReadText,
       () => clipboard.readText());
+  ipcMain.handle(Clipboard.Channel.ReadImage, event => {
+    const image = clipboard.readImage();
+    const clipboardWindow = clipboardWindows.get(event.sender.id);
+    if (clipboardWindow) {
+      clipboardWindow.image = image;
+    }
+    const size = image.getSize();
+    return {
+      width: size.width,
+      height: size.height,
+      dataUrl: image.toDataURL(),
+    };
+  });
   ipcMain.handle(Shell.Channel.OpenExternal,
       (event, url) => shell.openExternal(url));
   ipcMain.handle(AppInfo.Channel.Name,
       () => app.getName());
   ipcMain.handle(AppInfo.Channel.Version,
       () => app.getVersion());
+  ipcMain.handle(AppWindow.Channel.Resize,
+      (event, w, h) =>
+          BrowserWindow.fromWebContents(event.sender)?.setSize(w, h, false))
+  ipcMain.handle(AppWindow.Channel.CopyImage, event => {
+    const clipboardWindow = clipboardWindows.get(event.sender.id);
+    if (clipboardWindow && clipboardWindow.image) {
+      clipboard.writeImage(clipboardWindow.image);
+    }
+  });
 }
 
 let tray: Tray;
@@ -138,11 +171,11 @@ app.whenReady().then(() => {
 
   let allHidden = false;
   registerShortcut(config.toggleHideAll, () => {
-    clipboardPanels.forEach(window => {
+    clipboardWindows.forEach(window => {
       if (allHidden) {
-        window.show();
+        window.browserWindow.show();
       } else {
-        window.hide();
+        window.browserWindow.hide();
       }
     });
     allHidden = !allHidden;

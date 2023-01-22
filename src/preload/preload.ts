@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { AppInfo, Clipboard, Shell } from "@main/ipc";
+import {AppInfo, AppWindow, Clipboard, Shell} from "@main/ipc";
+import { Image } from "@/@types/global";
 
 contextBridge.exposeInMainWorld('clipboard', {
   availableFormats(): Promise<string[]> {
@@ -10,6 +11,9 @@ contextBridge.exposeInMainWorld('clipboard', {
   },
   readText(): Promise<string> {
     return ipcRenderer.invoke(Clipboard.Channel.ReadText);
+  },
+  readImage(): Promise<Image> {
+    return ipcRenderer.invoke(Clipboard.Channel.ReadImage);
   },
 })
 
@@ -23,7 +27,16 @@ contextBridge.exposeInMainWorld('appInfo', {
 })
 
 contextBridge.exposeInMainWorld('shell', {
-  openExternal(url: string): Promise<void> {
-    return ipcRenderer.invoke(Shell.Channel.OpenExternal, url);
+  openExternal(url: string): void {
+    ipcRenderer.invoke(Shell.Channel.OpenExternal, url);
+  }
+})
+
+contextBridge.exposeInMainWorld('appWindow', {
+  resize(width: number, height: number): Promise<void> {
+    return ipcRenderer.invoke(AppWindow.Channel.Resize, width, height);
+  },
+  copyImage(): Promise<void> {
+    return ipcRenderer.invoke(AppWindow.Channel.CopyImage);
   }
 })

@@ -1,8 +1,16 @@
 <template>
-  <div class="floating-panel-resize-frame fill-parent">
-    <div class="floating-panel-frame fill-parent">
-      <iframe class="floating-panel-text fill-parent"
-              :srcdoc="text"></iframe>
+  <div v-if="format === Format.Image"
+       style="height: 100%;">
+    <!-- Need pointer-events: none and user-select: none to make @copy works. Don't know why! -->
+    <img :src="image.dataUrl"
+         style="max-width: 100%; pointer-events: none; user-select: none; -webkit-app-region: drag"
+         @copy="copyImage">
+  </div>
+  <div v-else
+       style="-webkit-app-region: no-drag; padding: 4px; width: 100%; height: 100%;">
+    <div style="-webkit-app-region: drag; padding: 12px; width: 100%; height: 100%;">
+      <iframe style="-webkit-app-region: no-drag; width: 100%; height: 100%;"
+              :srcdoc="html"/>
     </div>
   </div>
 </template>
@@ -10,61 +18,77 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-const { clipboard } = window;
+import { Image } from "@/@types/global";
+const { appWindow, clipboard } = window;
 
-@Component
+enum Format {
+  Text,
+  Html,
+  Image,
+}
+
+@Component({
+  computed: {
+    Format() {
+      return Format;
+    }
+  }
+})
 export default class ClipboardPanel extends Vue {
-  text = ""
+  format = Format.Text
+  html = ""
+  image: Image = {
+    dataUrl: "", height: 0, width: 0
+  }
 
   async created() {
     const formats = await clipboard.availableFormats();
-    const format = formats.some(format => format == 'text/html') ?
-        'text/html' : 'text/plain';
-
-    let text: string;
-    switch (format) {
-      case 'text/html':
-        text = await clipboard.readHTML();
-        break;
-      case 'text/plain':
-        const clipboardText = await clipboard.readText();
-        text =`
-        <html>
-        <head>
-          <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        </head>
-        <body>
-          <pre>${clipboardText}</pre>
-        </body>
-        </html>
-        `;
-        break;
+    if (formats.some(format => format == 'text/html')) {
+      this.format = Format.Html;
+    } else if (formats.some(format => format == 'image/png')) {
+      this.format = Format.Image;
+    } else {
+      this.format = Format.Text;
     }
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/html');
+    if (this.format === Format.Image) {
+      this.image = await clipboard.readImage();
+      await appWindow.resize(this.image.width, this.image.height);
+    } else {
+      let html: string;
+      switch (this.format) {
+        case Format.Html:
+          html = await clipboard.readHTML();
+          break;
+        default:
+          const clipboardText = await clipboard.readText();
+          html =`
+          <html>
+          <head>
+            <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+          </head>
+          <body>
+            <pre>${clipboardText}</pre>
+          </body>
+          </html>
+          `;
+          break;
+      }
 
-    const styleElement = doc.createElement('style');
-    styleElement.setAttribute('type', 'text/css');
-    styleElement.append('pre { margin: 0; white-space: pre-wrap; }');
-    doc.head.append(styleElement);
-    doc.body.contentEditable = 'true';
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
 
-    this.text = doc.documentElement.outerHTML;
+      const styleElement = doc.createElement('style');
+      styleElement.setAttribute('type', 'text/css');
+      styleElement.append('pre { margin: 0; white-space: pre-wrap; }');
+      doc.head.append(styleElement);
+      doc.body.contentEditable = 'true';
+      this.html = doc.documentElement.outerHTML;
+    }
+  }
+
+  async copyImage() {
+    await appWindow.copyImage();
   }
 }
 </script>
-
-<style>
-.floating-panel-resize-frame {
-  -webkit-app-region: no-drag;
-  padding: 4px;
-}
-.floating-panel-frame {
-  -webkit-app-region: drag;
-  padding: 12px;
-}
-.floating-panel-text {
-  -webkit-app-region: no-drag;
-}
-</style>
