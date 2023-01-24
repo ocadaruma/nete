@@ -5,19 +5,19 @@ import {
   Input,
   Menu,
   BrowserWindow,
-  Tray, ipcMain, clipboard, shell
+  Tray, ipcMain, shell
 } from 'electron';
 
 import * as path from "path";
-import Config from "@main/Config";
+import Config from "@main/config";
 import Accelerator = Electron.Accelerator;
 import * as process from "process";
 import {Clipboard, Shell, AppInfo, AppWindow} from "@main/ipc";
-import NativeImage = Electron.NativeImage;
+import { clip } from "@main/clip";
 
 interface ClipboardWindow {
   browserWindow: BrowserWindow
-  image: NativeImage | null
+  image: Buffer | null
 }
 
 // prevent duplicated process
@@ -99,24 +99,19 @@ function registerShortcut(accelerator: Accelerator, callback: () => void) {
 }
 
 function setupIpc() {
-  ipcMain.handle(Clipboard.Channel.AvailableFormats,
-      () => clipboard.availableFormats());
+  ipcMain.handle(Clipboard.Channel.ClipboardFormat,
+      () => clip.clipboardFormat());
   ipcMain.handle(Clipboard.Channel.ReadHTML,
-      () => clipboard.readHTML());
+      () => clip.readHTML());
   ipcMain.handle(Clipboard.Channel.ReadText,
-      () => clipboard.readText());
-  ipcMain.handle(Clipboard.Channel.ReadImage, event => {
-    const image = clipboard.readImage();
+      () => clip.readText());
+  ipcMain.handle(Clipboard.Channel.ReadImage, async event => {
+    const imageData = await clip.readImage();
     const clipboardWindow = clipboardWindows.get(event.sender.id);
     if (clipboardWindow) {
-      clipboardWindow.image = image;
+      clipboardWindow.image = imageData.data;
     }
-    const size = image.getSize();
-    return {
-      width: size.width,
-      height: size.height,
-      dataUrl: image.toDataURL(),
-    };
+    return imageData.image;
   });
   ipcMain.handle(Shell.Channel.OpenExternal,
       (event, url) => shell.openExternal(url));
@@ -127,10 +122,10 @@ function setupIpc() {
   ipcMain.handle(AppWindow.Channel.Resize,
       (event, w, h) =>
           BrowserWindow.fromWebContents(event.sender)?.setSize(w, h, false))
-  ipcMain.handle(AppWindow.Channel.CopyImage, event => {
+  ipcMain.handle(AppWindow.Channel.CopyImage, async event => {
     const clipboardWindow = clipboardWindows.get(event.sender.id);
     if (clipboardWindow && clipboardWindow.image) {
-      clipboard.writeImage(clipboardWindow.image);
+      await clip.writeImage(clipboardWindow.image);
     }
   });
 }

@@ -8,7 +8,7 @@ declare global {
 }
 
 export interface Clipboard {
-  availableFormats(): Promise<string[]>
+  clipboardFormat(): Promise<ClipboardFormat>
   readHTML(): Promise<string>
   readText(): Promise<string>
   readImage(): Promise<Image>
@@ -27,6 +27,8 @@ export interface AppWindow {
   resize(width: number, height: number): void
   copyImage(): Promise<void>
 }
+
+export type ClipboardFormat = "Text" | "Html" | "Image";
 
 export interface Image {
   width: number

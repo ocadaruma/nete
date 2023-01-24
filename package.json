@@ -7,7 +7,9 @@
   "build": {
     "appId": "com.mayreh.Nete",
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "extendInfo": {
         "LSUIElement": 1
       }
@@ -29,6 +31,8 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.12.1",
     "buefy": "^0.8.12",
+    "clipboard-sys": "^1.0.2",
+    "png-dpi-reader-writer": "^0.2.4",
     "vue": "^2.6.11",
     "vue-router": "^3.1.5"
   },

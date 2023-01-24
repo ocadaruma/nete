@@ -1,6 +1,5 @@
 <template>
-  <div v-if="format === Format.Image"
-       style="height: 100%;">
+  <div v-if="format === 'Image'">
     <!-- Need pointer-events: none and user-select: none to make @copy works. Don't know why! -->
     <img :src="image.dataUrl"
          style="max-width: 100%; pointer-events: none; user-select: none; -webkit-app-region: drag"
@@ -17,47 +16,27 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import Component from 'vue-class-component';
-import { Image } from "@/@types/global";
+import {ClipboardFormat, Image} from "@/@types/global";
+import Component from "vue-class-component";
 const { appWindow, clipboard } = window;
 
-enum Format {
-  Text,
-  Html,
-  Image,
-}
-
-@Component({
-  computed: {
-    Format() {
-      return Format;
-    }
-  }
-})
+@Component
 export default class ClipboardPanel extends Vue {
-  format = Format.Text
+  format: ClipboardFormat = "Text"
   html = ""
   image: Image = {
     dataUrl: "", height: 0, width: 0
   }
 
   async created() {
-    const formats = await clipboard.availableFormats();
-    if (formats.some(format => format == 'text/html')) {
-      this.format = Format.Html;
-    } else if (formats.some(format => format == 'image/png')) {
-      this.format = Format.Image;
-    } else {
-      this.format = Format.Text;
-    }
-
-    if (this.format === Format.Image) {
+    this.format = await clipboard.clipboardFormat();
+    if (this.format === "Image") {
       this.image = await clipboard.readImage();
       await appWindow.resize(this.image.width, this.image.height);
     } else {
       let html: string;
       switch (this.format) {
-        case Format.Html:
+        case "Html":
           html = await clipboard.readHTML();
           break;
         default:
@@ -92,3 +71,10 @@ export default class ClipboardPanel extends Vue {
   }
 }
 </script>
+
+<style>
+html, body {
+  position: fixed;
+  top:0; bottom:0; left:0; right:0;
+}
+</style>

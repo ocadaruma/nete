@@ -1,6 +1,6 @@
 export namespace Clipboard {
   export enum Channel {
-    AvailableFormats = 'Clipboard_AvailableFormats',
+    ClipboardFormat = 'Clipboard_ClipboardFormat',
     ReadHTML = 'Clipboard_ReadHTML',
     ReadText = 'Clipboard_ReadText',
     ReadImage = 'Clipboard_ReadImage',

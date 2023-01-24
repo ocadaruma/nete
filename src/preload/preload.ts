@@ -1,10 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import {AppInfo, AppWindow, Clipboard, Shell} from "@main/ipc";
-import { Image } from "@/@types/global";
+import {ClipboardFormat, Image} from "@/@types/global";
 
 contextBridge.exposeInMainWorld('clipboard', {
-  availableFormats(): Promise<string[]> {
-    return ipcRenderer.invoke(Clipboard.Channel.AvailableFormats);
+  clipboardFormat(): Promise<ClipboardFormat> {
+    return ipcRenderer.invoke(Clipboard.Channel.ClipboardFormat);
   },
   readHTML(): Promise<string> {
     return ipcRenderer.invoke(Clipboard.Channel.ReadHTML);
