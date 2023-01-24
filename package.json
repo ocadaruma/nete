@@ -17,7 +17,8 @@
     "directories": {
       "buildResources": "assets",
       "output": "build"
-    }
+    },
+    "asar": false
   },
   "scripts": {
     "start": "electron .",
@@ -32,6 +33,7 @@
     "@fortawesome/fontawesome-free": "^5.12.1",
     "buefy": "^0.8.12",
     "clipboard-sys": "^1.0.2",
+    "electron-log": "^4.4.8",
     "png-dpi-reader-writer": "^0.2.4",
     "vue": "^2.6.11",
     "vue-router": "^3.1.5"

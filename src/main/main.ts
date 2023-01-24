@@ -14,6 +14,14 @@ import Accelerator = Electron.Accelerator;
 import * as process from "process";
 import {Clipboard, Shell, AppInfo, AppWindow} from "@main/ipc";
 import { clip } from "@main/clip";
+import { error as logError } from "electron-log";
+
+process.on('uncaughtException', function(err) {
+  logError('electron:event:uncaughtException');
+  logError(err);
+  logError(err.stack);
+  app.quit();
+});
 
 interface ClipboardWindow {
   browserWindow: BrowserWindow
