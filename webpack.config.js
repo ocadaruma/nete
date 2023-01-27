@@ -60,7 +60,6 @@ const mainConfig = Object.assign({
   plugins: [
     new CopyWebpackPlugin([
       { from: './public/images', to: 'images', },
-      { from: './node_modules/clipboard-sys/dist/src/platform/darwinScript', to: 'darwinScript', },
     ]),
   ],
 }, baseConfig);

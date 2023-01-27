@@ -68,7 +68,6 @@ function showClipboardPanel() {
     clipboardWindows.delete(clipboardWindow.webContents.id);
   });
   clipboardWindow.loadURL(`file://${__dirname}/index.html#/clipboard`);
-  clipboardWindow.webContents.openDevTools()
 }
 
 const openPanels: Map<string, BrowserWindow> = new Map();
@@ -113,8 +112,8 @@ function setupIpc() {
       () => clip.readHTML());
   ipcMain.handle(Clipboard.Channel.ReadText,
       () => clip.readText());
-  ipcMain.handle(Clipboard.Channel.ReadImage, async event => {
-    const imageData = await clip.readImage();
+  ipcMain.handle(Clipboard.Channel.ReadImage, event => {
+    const imageData = clip.readImage();
     const clipboardWindow = clipboardWindows.get(event.sender.id);
     if (clipboardWindow) {
       clipboardWindow.image = imageData.data;
@@ -130,10 +129,10 @@ function setupIpc() {
   ipcMain.handle(AppWindow.Channel.Resize,
       (event, w, h) =>
           BrowserWindow.fromWebContents(event.sender)?.setSize(w, h, false))
-  ipcMain.handle(AppWindow.Channel.CopyImage, async event => {
+  ipcMain.handle(AppWindow.Channel.CopyImage, event => {
     const clipboardWindow = clipboardWindows.get(event.sender.id);
     if (clipboardWindow && clipboardWindow.image) {
-      await clip.writeImage(clipboardWindow.image);
+      clip.writeImage(clipboardWindow.image);
     }
   });
 }

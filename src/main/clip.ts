@@ -1,9 +1,10 @@
 // provide APIs for clipboard
 
-import {clipboard as sys} from "clipboard-sys";
-import {clipboard} from "electron";
+import {clipboard, nativeImage} from "electron";
 import {parsePngFormat} from "png-dpi-reader-writer";
 import {ClipboardFormat, Image} from "@/@types/global";
+import * as process from "process";
+import * as electron from "electron";
 
 // As of Jan 2023, macOS has a concept called "scale factor" to display images.
 // (refs: https://developer.apple.com/design/human-interface-guidelines/foundations/images)
@@ -43,37 +44,41 @@ export namespace clip {
     return "Text";
   }
 
-  export function writeImage(data: Buffer): Promise<void> {
-    return sys.writeImage(data);
+  export function writeImage(data: Buffer): void {
+    if (process.platform == 'darwin') {
+      clipboard.writeBuffer('public.png', data);
+    } else {
+      clipboard.writeImage(nativeImage.createFromBuffer(data));
+    }
   }
 
-  export function readImage(): Promise<ImageData> {
+  export function readImage(): ImageData {
     const electronImage = clipboard.readImage();
-    const format = clipboard.availableFormats().filter(s => s.startsWith("image/"))[0];
-
-    // For image data, we don't use electron's clipboard API because pHYs info may be dropped.
-    // We will use electron's clipboard API to retrieve image size in pixel.
-    // https://github.com/electron/electron/issues/23156#issue-602238588 is likely related.
-    return sys.readImage().then(buffer => {
-      const res = parsePngFormat(buffer);
-      const factor = res.dpi === MACOS_PNG_DPI_2X ? 2 : 1;
-      const { width, height } = electronImage.getSize();
-      return {
-        image: {
-          width: width / factor,
-          height: height / factor,
-          dataUrl: `data:${format};base64,${buffer.toString('base64')}`,
-        },
-        data: buffer,
-      };
-    });
+    let buffer = clipboard.readImage().toPNG();
+    if (process.platform == 'darwin') {
+      let maybeBuffer = clipboard.readBuffer('public.png');
+      if (maybeBuffer.length > 0) {
+        buffer = maybeBuffer;
+      }
+    }
+    const res = parsePngFormat(buffer);
+    const factor = res.dpi === MACOS_PNG_DPI_2X ? 2 : 1;
+    const { width, height } = electronImage.getSize();
+    return {
+      image: {
+        width: width / factor,
+        height: height / factor,
+        dataUrl: `data:image/png;base64,${buffer.toString('base64')}`,
+      },
+      data: buffer,
+    };
   }
 
-  export function readText(): Promise<string> {
-    return Promise.resolve(clipboard.readText());
+  export function readText(): string {
+    return clipboard.readText();
   }
 
-  export function readHTML(): Promise<string> {
-    return Promise.resolve(clipboard.readHTML());
+  export function readHTML(): string {
+    return clipboard.readHTML();
   }
 }
