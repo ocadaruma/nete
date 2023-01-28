@@ -95,7 +95,6 @@ function showWindow(panelPath: string): () => void {
       openPanels.delete(panelPath);
     });
     window.loadURL(`file://${__dirname}/index.html#/${panelPath}`);
-    window.webContents.openDevTools()
   }
 }
 

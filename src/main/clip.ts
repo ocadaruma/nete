@@ -4,7 +4,6 @@ import {clipboard, nativeImage} from "electron";
 import {parsePngFormat} from "png-dpi-reader-writer";
 import {ClipboardFormat, Image} from "@/@types/global";
 import * as process from "process";
-import * as electron from "electron";
 
 // As of Jan 2023, macOS has a concept called "scale factor" to display images.
 // (refs: https://developer.apple.com/design/human-interface-guidelines/foundations/images)
